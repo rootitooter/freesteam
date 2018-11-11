@@ -47,3 +47,21 @@ This function begins by checking if the value at address `0x24b380` is 0. I
 presume this is a function that checks whether the steam API has been
 initialized already, as this address is set to a new value in the block the last
 jump instruction jumps to.
+
+```asm
+0x1cdf0:
+lea rdi, [0x0024b350] ; rdi = 0x0024b350, argument #1 for sub.memset_a20
+xor edx, edx          ; edx = 0, argument #3 for sub.memset_a20
+xor esi, esi          ; esi = 0, argument #2 for sub.memset_a20
+lea rcx, str.SteamClient017 ; 0x355f9 ; "SteamClient017" ; arg4 for sub.memset_a20
+call sub.memset_a20 ; args: (0x24b350, 0, 0, str.SteamClient017)
+mov rdi, rax
+mov qword [0x0024b380], rax ; [0x24b380:8]=0
+xor eax, eax
+test rdi, rdi ; rdi == 0?
+je 0x1cdd5
+```
+
+Here, we call the function that radare2 identifies as `sub.memset_a20`. However,
+just from glancing at it, we can immediately tell it is misidentified. Still, I
+haven't gone over it yet, so I won't identify it.
