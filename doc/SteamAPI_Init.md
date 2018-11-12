@@ -51,10 +51,10 @@ jump instruction jumps to.
 ```asm
 0x1cdf0:
 lea rdi, [0x0024b350] ; rdi = 0x0024b350, argument #1 for sub.memset_a20
-xor edx, edx          ; edx = 0, argument #3 for sub.memset_a20
-xor esi, esi          ; esi = 0, argument #2 for sub.memset_a20
+xor edx, edx          ; edx = 0, argument #2 for sub.memset_a20
+xor esi, esi          ; esi = 0, argument #3 for sub.memset_a20
 lea rcx, str.SteamClient017 ; 0x355f9 ; "SteamClient017" ; arg4 for sub.memset_a20
-call sub.memset_a20 ; args: (0x24b350, 0, 0, str.SteamClient017)
+call sub.connect_to_client ; args: (0x24b350, 0, 0, str.SteamClient017)
 mov rdi, rax
 mov qword [0x0024b380], rax ; [0x24b380:8]=0
 xor eax, eax
@@ -62,6 +62,33 @@ test rdi, rdi ; rdi == 0?
 je 0x1cdd5
 ```
 
-Here, we call the function that radare2 identifies as `sub.memset_a20`. However,
-just from glancing at it, we can immediately tell it is misidentified. Still, I
-haven't gone over it yet, so I won't identify it.
+Here, we call the function that I called `connect_to_client`, as it seems to be
+the one responsible for connecting to Steam's client. This is probably what we
+are looking for if we're trying to bypass it.
+
+### connect_to_client
+I have yet to analyze this function in great detail, however, I can tell just
+from glancing over at it that it calls the following functions:
+ - `SteamAPI_GetSteamInstallPath` (implemented!)
+ - `SteamAPI_IsSteamRunning` (implemented!)
+ - `Steam_ReleaseThreadLocalMemory` (through dlsym)
+ - `CreateInterface` (through dlsym)
+
+The last two functions are loaded from some file file, which is found through a
+separate subroutine. I'm assuming this file is `steamclient.so`, present in any
+Steam client installation, as it is later referenced in the function through
+dlclose, and also exports both functions mentioned.
+
+I am unsure of how I'll handle these connections to the client, as there
+obviously isn't one. I believe the best way to go about it would be to
+reimplement this connect_to_client subroutine, but since it isn't exported
+anywhere in the file, as far as I know it's next to impossible to override with
+LD_PRELOAD. This leaves us with two options:
+ a) Find a way to fake `steamclient.so`'s presence, and then intercept both
+ function calls
+ b) Reimplement SteamAPI_Init in its entirety
+
+I'd much prefer to do a), but I am afraid it might not be the easiest. It'd
+probably involve including a separate `steamclient.so` which would be copied
+into the freesteam install dir. This, however, lets us intercept all sorts of
+Steam client communications, which could for sure be beneficial.
