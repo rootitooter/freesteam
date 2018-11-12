@@ -30,7 +30,7 @@ S_API bool S_CALLTYPE SteamAPI_Init() {
     
     // Get Install path!
     INSTALLPATH = getenv("FS_INSTALLPATH");
-    if (INSTALLPATH == NULL || strcmp(INSTALLPATH, "")) {
+    if (INSTALLPATH == NULL || strcmp(INSTALLPATH, "") == 0) {
         char *xdg_home;
         xdg_home = getenv("XDG_DATA_HOME");
         if (xdg_home == NULL || strcmp(xdg_home, ""))
