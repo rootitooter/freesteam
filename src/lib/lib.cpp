@@ -13,14 +13,6 @@ const char *APPID;
 const char *INSTALLPATH;
 
 S_API bool S_CALLTYPE SteamAPI_Init() {
-    // Calling the original SteamAPI_Init. We still want it to run, we just
-    // don't want our program to know it failed.
-    orig_steamapi_init_type orig_init;
-    orig_init = (orig_steamapi_init_type)dlsym(RTLD_NEXT,"SteamAPI_Init");
-    orig_init();
-
-    printf("Called SteamAPI_Init.\n");
-
     // Now, we want to do some initialization of our own!
     // Get username!
     char *username;
@@ -39,8 +31,14 @@ S_API bool S_CALLTYPE SteamAPI_Init() {
         INSTALLPATH = strcat(xdg_home, "/freesteam");
     }
 
-    APPID = getenv("FS_APPID");
+    APPID = getenv("SteamAppId");
     // TODO: Get APPID from file
+
+    // Calling the original SteamAPI_Init. We still want it to run, we just
+    // don't want our program to know it failed.
+    //orig_steamapi_init_type orig_init;
+    //orig_init = (orig_steamapi_init_type)dlsym(RTLD_NEXT,"SteamAPI_Init");
+    //orig_init();
 
     // The only circumstances in which this would normally return false would be
     // if the user a) doesn't own the game or b) steam isn't running. We don't

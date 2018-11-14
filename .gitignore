@@ -1,2 +1,8 @@
 out/
 .vscode
+lib/libsteam_api.so
+lib/steam_appid.txt
+*.i64
+*.id*
+*.nam
+*.til
